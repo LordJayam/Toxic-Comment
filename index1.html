@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>FCAM</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<style type="text/css">
+		*{
+			background-color: #637d37;
+			max-width: 100%;
+		}
+	</style>
+</head>
+<body>
+	<div class="content">
+		<div class="row">
+			<div class="col text-center">
+				<h1 style="color: white;font-size: 8em;text-shadow: 18px 18px 18px #000000; font-weight: 900;">FCAM</h1>
+				<h6 style="color: white;font-size: 4em;text-shadow: 15px 15px 15px #000000; font-weight: 900;">Reddit Live Feed Questions</h6>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-8 offset-md-2">
+				<div style="background-color: #000;font-size: 1em;box-shadow: 5px 10px 10px 5px #000;height:350px; overflow: scroll;" name="message" id="name"></div>
+			</div>
+		</div>
+	</div>
+</body>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script src="http://js.pusher.com/2.2/pusher.min.js"></script>
+<script>
+  // Open a Pusher connection to the Realtime Reddit API
+  var pusher = new Pusher("50ed18dd967b455393ed");
+
+  // Subscribe to the /r/AskReddit subreddit (lowercase)
+  var subredditChannel = pusher.subscribe("askreddit");
+
+  // Listen for new stories
+  subredditChannel.bind("new-listing", function(listing) {
+		var message = listing['title'];
+		var xhr = new XMLHttpRequest();
+		var url = "http://localhost:2190/api/threat_classification";
+		xhr.open("POST", url, true);
+		xhr.setRequestHeader("Content-Type", "application/json");
+		xhr.onreadystatechange = function () {
+		   if (xhr.readyState === 4 && xhr.status === 200) {
+		       var json = JSON.parse(xhr.responseText);
+					 if(json.ans == "none"){
+					 document.getElementById('name').innerHTML += "<li style='padding-left:5px;background-color: #000;color: green;'>"+message+"&nbsp;&nbsp;&nbsp;"+json.ans+"</li><br/>";
+				 }else{
+					 document.getElementById('name').innerHTML += "<li style='padding-left:5px;background-color: #000;color: red;'>"+message+"&nbsp;&nbsp;&nbsp;"+json.ans+"</li><br/>";
+				 }
+		 }
+		};
+		var data = JSON.stringify({"data": message});
+		xhr.send(data);
+  });
+</script>
+</html>

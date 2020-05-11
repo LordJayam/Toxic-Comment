@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>FCAM</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<style type="text/css">
+*{
+background-color: #637d37;
+max-width: 100%;
+}
+</style>
+</head>
+<body>
+<div class="content">
+<div class="row">
+<div class="col text-center">
+<h1 style="color: white;font-size: 6em;text-shadow: 15px 15px 15px #000000; font-weight: 900;">FCAM</h1>
+</div>
+</div>
+<div class="row">
+<div class="col text-center">
+<textarea style="background-color: #fff;height: 6em;width: 20em;font-size: 1.8em;border-radius: 1.2em;box-shadow: 5px 10px 10px 5px #000;" name="message" id="name"></textarea>
+</div>
+</div>
+<div class="row mt-3">
+<div class="col text-center">
+<button onclick="Checking()" class="btn btn-primary" style="font-size: 1.8em;border-radius: 10px;">Submit</button>
+</div>
+</div>
+<div class="row mt-2">
+<div class="col text-center">
+<h2 style="color: white;font-size: 2em;text-shadow: 6px 6px 6px #000000; font-weight: 900;">Results</h2>
+<div class="col-md-6 offset-md-3" style="font-size:1.8em;height: 3em;background-color: #fff;border-radius: 2em;" id="result">
+
+</div>
+<div class="col-md-6 offset-md-3" id="feedback">
+
+</div>
+</div>
+</div>
+</div>
+</body>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script type="text/javascript">
+function Checking(){
+var message = document.getElementById('name').value;
+var xhr = new XMLHttpRequest();
+var url = "http://localhost:2190/api/threat_classification";
+xhr.open("POST", url, true);
+xhr.setRequestHeader("Content-Type", "application/json");
+xhr.onreadystatechange = function () {
+   if (xhr.readyState === 4 && xhr.status === 200) {
+       var json = JSON.parse(xhr.responseText);
+       document.getElementById('result').innerHTML = json.ans;
+       document.getElementById('feedback').innerHTML = `<h2 style="color: white;font-size: 2em;text-shadow: 6px 6px 6px #000000; font-weight: 900;">Feedback</h2><input type="radio" name="feedback"  value="threat"/>Threat <input type="radio" name="feedback"  value="insult"/>Insult <input type="radio" name="feedback"  value="identity_hate"/>Identity_hate <input type="radio" name="feedback"  value="toxic"/>Toxic <input type="radio" name="feedback"  value="severe_toxic"/>Severe_toxic <input type="radio" name="feedback"  value="obscene"/>Obscene <div class="col text-center"><button onclick="Feedback()" class="btn btn-primary" style="font-size: 15px;border-radius: 10px;">Submit</button></div>`;
+   }
+};
+var data = JSON.stringify({"data": message});
+xhr.send(data);
+}
+function Feedback(){
+ ans = document.querySelector('input[name="feedback"]:checked').value;
+ var message = document.getElementById('name').value;
+ var xhr = new XMLHttpRequest();
+ var url = "http://localhost:2190/api/feedback";
+ xhr.open("POST", url, true);
+ xhr.setRequestHeader("Content-Type", "application/json");
+ xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4 && xhr.status === 200) {
+        document.getElementById('feedback').innerHTML = `<h2 style="color: white;font-size: 2em;text-shadow: 6px 6px 6px #000000; font-weight: 900;">Submited Successfully</h2>`;
+    }
+ };
+ var toxic=0, severe_toxic=0, obscene=0, threat=0, insult=0, identity_hate=0;
+ if(ans == "toxic") toxic =1
+ if(ans == "severe_toxic") severe_toxic=1
+ if(ans == "obscene") obscene=1
+ if(ans == "threat") threat=1
+ if(ans == "insult") insult=1
+ if(ans == "identity_hate") identity_hate=1
+ var data = JSON.stringify({"data":{"text": message, "flag": {"toxic" : toxic,"severe_toxic": severe_toxic,"obscene":obscene,"threat":threat,	"insult":insult,	"identity_hate":identity_hate}}});
+ xhr.send(data);
+}
+</script>
+</html>
